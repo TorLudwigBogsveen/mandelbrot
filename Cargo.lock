@@ -219,7 +219,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "engine_core"
 version = "0.0.0"
-source = "git+https://github.com/romptroll/engine_core#d12dd450e24fc927208e1e39e17f9cdffc5cf12f"
+source = "git+https://github.com/romptroll/engine_core#2f260c269ce0d2de4cad3e8b597cafa0db10227e"
 dependencies = [
  "bus",
  "colored",

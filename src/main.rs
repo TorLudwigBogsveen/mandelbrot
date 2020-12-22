@@ -42,31 +42,6 @@ fn main() {
     let mut gui = GUI::new(&mut win);
 
     let mut input = Input::new(&mut win);
-    
-    let mut x_slider = Slider {
-        x: 20.0,
-        y: 60.0, 
-        width: 400.0, 
-        height: 5.0,
-        selected: false,
-        val: 0.35,
-    };
-    let mut y_slider = Slider {
-        x: 20.0,
-        y: 80.0, 
-        width: 400.0, 
-        height: 5.0,
-        selected: false,
-        val: 0.45,
-    };
-    let mut zoom_slider = Slider {
-        x: 20.0,
-        y: 100.0, 
-        width: 400.0, 
-        height: 5.0,
-        selected: false,
-        val: 1.0,
-    };
 
     //gfx.set_font(Font::new("res/UbuntuMono-Regular.ttf", 60));
     gui.graphics.set_font(Font::new("res/UbuntuMono-Regular.ttf", 80));
@@ -105,14 +80,33 @@ fn main() {
 
         gui.graphics.set_translation(-1.0, -1.0);
         gui.graphics.set_scale(2.0 / gfx.frame_width() as f32, 2.0 / gfx.frame_height() as f32);
-        
-        gui.slider(&mut x_slider);
-        gui.slider(&mut y_slider);
-        gui.slider(&mut zoom_slider);
 
-        xoff = x_slider.val * 10.0 - 5.0;
-        yoff = y_slider.val * 10.0 - 5.0;
-        zoom = 1.0 / zoom_slider.val;
+        if input.mouse_scroll_y() != 0.0 {
+            //println!("{}", input.mouse_x());
+            let x = (input.mouse_x() / 2.0 + 0.5);
+            let y = (-input.mouse_y() / 2.0 + 0.5);
+
+            //println!("{}", x * (width / zoom) + xoff);
+            //println!("{}", y * (height / zoom) + yoff);
+
+            let w1 = width / (zoom);
+            let w2 = width / (zoom * 1.05f32.powf(input.mouse_scroll_y()));
+
+            let h1 = height / (zoom);
+            let h2 = height / (zoom * 1.05f32.powf(input.mouse_scroll_y()));
+
+            xoff = x * (w1 - w2) + xoff;
+            yoff = y * (h1 - h2) + yoff;
+
+            //(input.mouse_x() / 2.0) * (width / zoom) = (input.mouse_x() / 2.0) * (width / zoom * 1.05f32.powf(input.mouse_scroll_y())) + c
+
+            //yoff = lerp(yoff, y, 0.1);
+            zoom *= 1.05f32.powf(input.mouse_scroll_y());
+        }
+        
+        //xoff = x_slider.val * 10.0 - 5.0;
+        //yoff = y_slider.val * 10.0 - 5.0;
+        //zoom = 1.0 / zoom_slider.val;
         
 
         gui.update();
@@ -123,6 +117,10 @@ fn main() {
         input.update();
         std::thread::sleep(std::time::Duration::from_millis(10));
     }
+}
+
+fn lerp(v0: f32, v1: f32, t: f32) -> f32 {
+    (1.0 - t) * v0 + t * v1
 }
 
 fn key_check(text_box: &mut TextBox) {
