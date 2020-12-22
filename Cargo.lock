@@ -229,7 +229,7 @@ dependencies = [
 [[package]]
 name = "engine_gui"
 version = "0.1.0"
-source = "git+https://github.com/romptroll/engine_gui#7700d4395f66a69238fd43ec7fc4a171177b8132"
+source = "git+https://github.com/romptroll/engine_gui#3d90608416f2dbcbd1d1346561f96ff779b9466f"
 dependencies = [
  "bus",
  "engine_core",
@@ -239,7 +239,7 @@ dependencies = [
 [[package]]
 name = "engine_renderer"
 version = "0.0.0"
-source = "git+https://github.com/romptroll/engine_renderer?branch=main#a42f948e2d2f5ada54d6dae4ec7b1d63171a2fcc"
+source = "git+https://github.com/romptroll/engine_renderer?branch=main#b16607463a273f5812591f71f0fa752578965de6"
 dependencies = [
  "bus",
  "colored",

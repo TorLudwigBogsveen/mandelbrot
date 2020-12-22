@@ -22,8 +22,8 @@
 */
 
 use engine_core::input::{Input, Key};
-use engine_gui::{comps::TextBox, gui::GUI};
-use engine_renderer::{color::*, graphics::Graphics, renderer, shader::Shader};
+use engine_gui::{comps::{Slider, TextBox}, gui::{GUI, TextAlign}};
+use engine_renderer::{color::*, font::Font, graphics::Graphics, renderer, shader::Shader};
 
 fn main() {
     let mut win = engine_core::window::Window::new(600, 400, "Graphics").unwrap();
@@ -32,8 +32,8 @@ fn main() {
 
     let mut xoff: f32 = -2.5;
     let mut yoff: f32 = -1.0;
-    let width = 3.5;
-    let height = 2.0;
+    let mut width = 3.5;
+    let mut height = 2.0;
     let mut zoom = 1.0;
 
     let mut gfx = Graphics::new(&mut win);
@@ -43,15 +43,34 @@ fn main() {
 
     let mut input = Input::new(&mut win);
     
-    let mut x_box = TextBox {
-        x: 0.0,
-        y: 0.0, 
-        width: 128.0, 
-        height: 64.0,
-        text: String::from("0.0"),
+    let mut x_slider = Slider {
+        x: 20.0,
+        y: 60.0, 
+        width: 400.0, 
+        height: 5.0,
         selected: false,
-        keys: Vec::new(),
+        val: 0.35,
     };
+    let mut y_slider = Slider {
+        x: 20.0,
+        y: 80.0, 
+        width: 400.0, 
+        height: 5.0,
+        selected: false,
+        val: 0.45,
+    };
+    let mut zoom_slider = Slider {
+        x: 20.0,
+        y: 100.0, 
+        width: 400.0, 
+        height: 5.0,
+        selected: false,
+        val: 1.0,
+    };
+
+    //gfx.set_font(Font::new("res/UbuntuMono-Regular.ttf", 60));
+    gui.graphics.set_font(Font::new("res/UbuntuMono-Regular.ttf", 80));
+    gui.style.text_align = TextAlign::Center;
 
     while !win.should_close() {
         gfx.clear(WHITE);
@@ -71,24 +90,30 @@ fn main() {
 
         gfx.fill_rect(-1.0, -1.0, 2.0, 2.0);
 
+        //gfx.set_color(RED);
+        //gfx.draw_string("fgh", 0.0, 0.0);
+
         gfx.update();
         gfx.flush();
 
 
+        gui.graphics.set_translation(0.0, 0.0);
+        gui.graphics.set_scale(1.0, 1.0);
+
+        gfx.set_color(RED);
+        //gfx.draw_string("fgh", 0.0, 0.0);
+
         gui.graphics.set_translation(-1.0, -1.0);
         gui.graphics.set_scale(2.0 / gfx.frame_width() as f32, 2.0 / gfx.frame_height() as f32);
+        
+        gui.slider(&mut x_slider);
+        gui.slider(&mut y_slider);
+        gui.slider(&mut zoom_slider);
 
-        gui.text_box(&mut x_box);
-
-        for k in &x_box.keys  {
-            let c = *k as u8 as char;
-
-            if (c >= '0' && c <= '9') || c == '.' {
-                
-            } 
-            
-            println!("d{}", c);
-        }
+        xoff = x_slider.val * 10.0 - 5.0;
+        yoff = y_slider.val * 10.0 - 5.0;
+        zoom = 1.0 / zoom_slider.val;
+        
 
         gui.update();
         
@@ -98,4 +123,28 @@ fn main() {
         input.update();
         std::thread::sleep(std::time::Duration::from_millis(10));
     }
+}
+
+fn key_check(text_box: &mut TextBox) {
+    for k in &text_box.keys  {
+            
+        if *k == Key::Backspace {
+            text_box.text.pop();
+        }
+
+        if *k == Key::Slash { //minus
+            text_box.text.push('-');
+        }
+
+        println!("{}", *k as u16);
+        
+        let c = *k as u8 as char;
+
+        if (c >= '0' && c <= '9') || c == '.' {
+            text_box.text.push(c);
+        }
+
+        println!("d{}", c);
+    }
+    text_box.keys.clear();
 }
