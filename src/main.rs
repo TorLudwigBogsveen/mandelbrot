@@ -28,13 +28,14 @@ use engine_renderer::{color::*, font::Font, graphics::Graphics, renderer, shader
 fn main() {
     let mut win = engine_core::window::Window::new(600, 400, "Graphics").unwrap();
     win.make_current();
+
     renderer::init_gl(&mut win);
 
-    let mut xoff: f32 = -2.5;
-    let mut yoff: f32 = -1.0;
-    let mut width = 3.5;
-    let mut height = 2.0;
-    let mut zoom = 1.0;
+    let mut xoff: f64 = -2.5;
+    let mut yoff: f64 = -1.0;
+    let mut width: f64 = 3.5;
+    let mut height: f64 = 2.0;
+    let mut zoom: f64 = 1.0;
 
     let mut gfx = Graphics::new(&mut win);
     gfx.set_shape_shader(Shader::from_file("res/mandelbrot.glsl"));
@@ -47,15 +48,31 @@ fn main() {
     gui.graphics.set_font(Font::new("res/UbuntuMono-Regular.ttf", 80));
     gui.style.text_align = TextAlign::Center;
 
+    let mut fps = 0;
+    let mut fps_count = 0;
+    let mut time = std::time::SystemTime::now();
+
     while !win.should_close() {
+        fps_count += 1;
+
+        if time.elapsed().unwrap() >= std::time::Duration::from_secs(1) {
+            time = std::time::SystemTime::now();
+            fps = fps_count;
+            fps_count = 0;
+        }
+
+        if input.key_down(Key::R) {
+            gfx.set_shape_shader(Shader::from_file("res/mandelbrot.glsl"));
+        }
+
         gfx.clear(WHITE);
 
         let shader = gfx.shape_shader();
         shader.bind();
-        shader.upload_from_name_1f("u_xoff", xoff);
-        shader.upload_from_name_1f("u_yoff", yoff);
-        shader.upload_from_name_1f("u_width", width / zoom);
-        shader.upload_from_name_1f("u_height", height / zoom);
+        shader.upload_from_name_1d("u_xoff", xoff);
+        shader.upload_from_name_1d("u_yoff", yoff);
+        shader.upload_from_name_1d("u_width", width / zoom);
+        shader.upload_from_name_1d("u_height", height / zoom);
         shader.upload_from_name_1f("u_framewidth", win.get_width() as f32);
         shader.upload_from_name_1f("u_frameheight", win.get_height() as f32);
 
@@ -74,26 +91,29 @@ fn main() {
 
         gui.graphics.set_translation(0.0, 0.0);
         gui.graphics.set_scale(1.0, 1.0);
+        gui.graphics.draw_string(&fps.to_string(), -1.0, 1.0 - (gui.graphics.font().height() as f32 / win.get_height() as f32)  / 1.5);
 
-        gfx.set_color(RED);
         //gfx.draw_string("fgh", 0.0, 0.0);
 
         gui.graphics.set_translation(-1.0, -1.0);
         gui.graphics.set_scale(2.0 / gfx.frame_width() as f32, 2.0 / gfx.frame_height() as f32);
+        
 
         if input.mouse_scroll_y() != 0.0 {
             //println!("{}", input.mouse_x());
-            let x = (input.mouse_x() / 2.0 + 0.5);
-            let y = (-input.mouse_y() / 2.0 + 0.5);
+            let x = input.mouse_x() as f64 / 2.0 + 0.5;
+            let y = -input.mouse_y() as f64 / 2.0 + 0.5;
 
             //println!("{}", x * (width / zoom) + xoff);
             //println!("{}", y * (height / zoom) + yoff);
 
+            //println!("zoom: {}", zoom);
+
             let w1 = width / (zoom);
-            let w2 = width / (zoom * 1.05f32.powf(input.mouse_scroll_y()));
+            let w2 = width / (zoom * 1.05f64.powf(input.mouse_scroll_y() as f64));
 
             let h1 = height / (zoom);
-            let h2 = height / (zoom * 1.05f32.powf(input.mouse_scroll_y()));
+            let h2 = height / (zoom * 1.05f64.powf(input.mouse_scroll_y() as f64));
 
             xoff = x * (w1 - w2) + xoff;
             yoff = y * (h1 - h2) + yoff;
@@ -101,7 +121,7 @@ fn main() {
             //(input.mouse_x() / 2.0) * (width / zoom) = (input.mouse_x() / 2.0) * (width / zoom * 1.05f32.powf(input.mouse_scroll_y())) + c
 
             //yoff = lerp(yoff, y, 0.1);
-            zoom *= 1.05f32.powf(input.mouse_scroll_y());
+            zoom *= 1.05f64.powf(input.mouse_scroll_y() as f64);
         }
         
         //xoff = x_slider.val * 10.0 - 5.0;

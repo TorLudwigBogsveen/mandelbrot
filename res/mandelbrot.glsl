@@ -1,5 +1,5 @@
 #shader vertex
-#version 330 core
+#version 440 core
 
 layout(location = 0) in vec4 v_bounds;
 layout(location = 1) in int v_color;
@@ -12,7 +12,7 @@ void main() {
 }
 
 #shader geometry
-#version 330 core
+#version 440 core
 
 layout(points) in;
 layout(triangle_strip, max_vertices = 64) out;
@@ -150,39 +150,69 @@ void main() {
 }
 
 #shader fragment
-#version 330 core
+#version 440 core
 
 in vec4 color;
 
 uniform float u_framewidth;
 uniform float u_frameheight;
-uniform float u_xoff;
-uniform float u_yoff;
-uniform float u_width;
-uniform float u_height;
+uniform double u_xoff;
+uniform double u_yoff;
+uniform double u_width;
+uniform double u_height;
+
+dvec2 cmpxcjg(in dvec2 c) {
+	return dvec2(c.x, -c.y);
+}
+
+dvec2 cmpxmul(in dvec2 a, in dvec2 b) {
+	return dvec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+}
+
+dvec2 cmpxpow(in dvec2 c, int p) {
+    dvec2 tmp = c;
+    for (int i = 1; i < p; ++i) {
+        c = cmpxmul(tmp, c);
+    }
+    return c;
+}
+
+dvec2 cmpxdiv(in dvec2 a, in vec2 b) {
+    return cmpxmul(a, cmpxcjg(b));
+}
+
+double cmpxmag(in dvec2 c) {
+    return sqrt(c.x * c.x + c.y * c.y);
+}
+
+double cmpxmagsq(in dvec2 c) {
+    return c.x * c.x + c.y * c.y;
+}
 
 void main() {
     vec2 pos = gl_FragCoord.xy;
 
-    float x0 = (pos.x / u_framewidth) * u_width + u_xoff;
-    float y0 = (1.0 - (pos.y / u_frameheight)) * u_height + u_yoff;
-    float x = 0.0;
-    float y = 0.0;
-    float iteration = 0;
-    float max_iteration = 6000;
+    double x0 = (pos.x / u_framewidth) * u_width + u_xoff;
+    double y0 = (1.0 - (pos.y / u_frameheight)) * u_height + u_yoff;
+    int iteration = 0;
+    int max_iteration = 1000;
 
-    while(x*x + y*y <= 2.0*2.0 && iteration < max_iteration) {
-        float xtemp = x*x - y*y + x0;
-        y = 2.0*x*y + y0;
-        x = xtemp;
+    dvec2 z = dvec2(0.0, 0.0);
+    dvec2 c = dvec2(x0, y0);
+
+    while(cmpxmagsq(z) <= 2.0*2.0 && iteration < max_iteration) {
+        z = cmpxpow(z, 2);
+        z.x += c.x;
+        z.y += c.y;
+
         iteration = iteration + 1;
     }
 
     float a = 0.30;
 
-    float r = (sin(iteration * a + 0.0) + 1.0) / 2.0;
-    float g = (sin(iteration * a + 2.0) + 1.0) / 2.0;
-    float b = (sin(iteration * a + 4.0) + 1.0) / 2.0;
+    float r = (sin(iteration * a + 0.2) + 1.0) / 1.0;
+    float g = (sin(iteration * a + 1.0) + 0.3) / 2.0;
+    float b = (sin(iteration * a + 0.0) + 0.9) / 2.0;
 
 	gl_FragColor = vec4(r, g, b, 1.0);
 }

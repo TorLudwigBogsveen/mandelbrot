@@ -239,7 +239,7 @@ dependencies = [
 [[package]]
 name = "engine_renderer"
 version = "0.0.0"
-source = "git+https://github.com/romptroll/engine_renderer?branch=main#b16607463a273f5812591f71f0fa752578965de6"
+source = "git+https://github.com/romptroll/engine_renderer?branch=main#42e754575e0e0128ed865b335f7043054424417c"
 dependencies = [
  "bus",
  "colored",
